@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora de Peso com Arredondamento Personalizado</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #e6f7ff;
+        color: #333;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: 30px auto;
+      }
+      h1 {
+        text-align: center;
+        color: #0056b3;
+        margin-bottom: 25px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+      input[type="number"],
+      select {
+        width: calc(100% - 20px);
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        width: 100%;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .resultado-card {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 8px;
+        font-size: 1.1em;
+        line-height: 1.6;
+      }
+      .resultado-card.sucesso {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+      .resultado-card.aviso {
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        color: #856404;
+      }
+      .resultado-card p {
+        margin: 5px 0;
+      }
+      .instrucoes {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 20px;
+        text-align: center;
+      }
+      h3 {
+        color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Calculadora de Peso Ideal e Ajustado</h1>
+      <p>
+        Preencha os campos para calcular o Peso Ideal e, se necessário, o Peso
+        Ajustado. Todos os resultados são arredondados para duas casas decimais.
+      </p>
+
+      <label for="altura">Altura (cm):</label>
+      <input type="number" id="altura" placeholder="Ex: 175" required />
+
+      <label for="pesoAtual">Peso Atual (kg):</label>
+      <input type="number" id="pesoAtual" placeholder="Ex: 90" required />
+
+      <label for="genero">Gênero:</label>
+      <select id="genero">
+        <option value="masculino">Masculino</option>
+        <option value="feminino">Feminino</option>
+      </select>
+
+      <button onclick="calcularTudo()">Calcular</button>
+
+      <div class="resultado-card" id="resultado">
+        O resultado será exibido aqui.
+      </div>
+
+      <div class="instrucoes">
+        <h3>Fórmulas Utilizadas:</h3>
+        <p><strong>Peso Ideal:</strong> IMC ideal × (altura)²</p>
+        <ul>
+          <li>IMC ideal (Homens): 22 kg/m²</li>
+          <li>IMC ideal (Mulheres): 21 kg/m²</li>
+        </ul>
+        <p>
+          <strong>Peso Ajustado:</strong> (Peso Ideal - Peso Atual) × 0.25 +
+          Peso Atual
+        </p>
+        <p>
+          <strong
+            >O Peso Ajustado é calculado somente se o IMC atual for < 18 ou >
+            30.</strong
+          >
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // Função personalizada para arredondamento consistente
+      function arredondar(num, casasDecimais) {
+        const fator = Math.pow(10, casasDecimais);
+        return (Math.round(num * fator) / fator).toFixed(casasDecimais);
+      }
+
+      function calcularTudo() {
+        const alturaCm = parseFloat(document.getElementById("altura").value);
+        const pesoAtualKg = parseFloat(
+          document.getElementById("pesoAtual").value
+        );
+        const genero = document.getElementById("genero").value;
+        const resultadoDiv = document.getElementById("resultado");
+
+        if (
+          isNaN(alturaCm) ||
+          isNaN(pesoAtualKg) ||
+          alturaCm <= 0 ||
+          pesoAtualKg <= 0
+        ) {
+          resultadoDiv.innerHTML =
+            "Por favor, insira valores válidos para altura e peso.";
+          resultadoDiv.className = "resultado-card aviso";
+          return;
+        }
+
+        const alturaMetros = alturaCm / 100;
+        let imcIdeal;
+
+        if (genero === "masculino") {
+          imcIdeal = 22;
+        } else {
+          // feminino
+          imcIdeal = 21;
+        }
+
+        // 1. Calcular o Peso Ideal
+        const pesoIdeal = imcIdeal * (alturaMetros * alturaMetros);
+
+        // 2. Calcular o IMC atual
+        const imcAtual = pesoAtualKg / (alturaMetros * alturaMetros);
+
+        let htmlResultados = `<p><strong>Seu IMC atual é:</strong> ${arredondar(
+          imcAtual,
+          2
+        )} kg/m²</p>`;
+        htmlResultados += `<p><strong>Seu Peso Ideal é:</strong> ${arredondar(
+          pesoIdeal,
+          2
+        )} kg</p>`;
+
+        // 3. Verificar o IMC para calcular o Peso Ajustado
+        if (imcAtual > 30 || imcAtual < 18) {
+          const pesoAjustado = (pesoIdeal - pesoAtualKg) * 0.25 + pesoAtualKg;
+          htmlResultados += `<p><strong>Seu Peso Ajustado é:</strong> ${arredondar(
+            pesoAjustado,
+            2
+          )} kg</p>`;
+          htmlResultados += `<p><em>O peso ajustado foi calculado pois seu IMC está fora da faixa de normalidade (18 - 30).</em></p>`;
+          resultadoDiv.className = "resultado-card sucesso";
+        } else {
+          htmlResultados += `<p><em>O peso ajustado não se aplica pois seu IMC está dentro da faixa considerada normal.</em></p>`;
+          resultadoDiv.className = "resultado-card aviso";
+        }
+
+        resultadoDiv.innerHTML = htmlResultados;
+      }
+    </script>
+  </body>
+</html>
